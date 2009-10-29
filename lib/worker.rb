@@ -87,8 +87,8 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
       if  workitem.params['input-files'].nil? && workitem.params['input-folder'].nil? && workitem['previous_output_folder'].nil?
         DaemontKit.logger.info "Using previous output folder for inputs. Downloading..."
-        input_folder =  workitem.previous_output_folder
-        infile_list = @s3h.download_folder(workitem.previous_output_folder, workitem.params['input-filter'])
+        input_folder =  workitem['previous_output_folder']
+        infile_list = @s3h.download_folder(workitem['previous_output_folder'], workitem.params['input-filter'])
       end
 
       DaemonKit.logger.info "Downloaded #{infile_list.size} files."
@@ -106,11 +106,13 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
       #now lets put the files back into the output bucket
       output_folder = workitem['previous_output_folder'] ||= workitem.params['output-folder'] ||= input_folder
-
+      
+      workitem['previous_output_folder'] = output_folder # set previous output folder for future reference
+      
       DaemonKit.logger.info "Uploading Output Files..."
 
       @s3h.upload(output_folder, infile_list)
-
+      
       @rmi.send_idle
 
     end
