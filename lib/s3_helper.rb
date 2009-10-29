@@ -25,6 +25,7 @@ class S3Helper
     key = RightAws::S3::Key.create(bucket, key_name)
     fname = File.basename(key_name)
     File.open(fname, "w+") { |f| f.write(key.data) }
+    DaemonKit.logger.info "Downloaded #{bucket}:#{key.to_s} --> #{fname} "
     return fname
     
   end
@@ -58,11 +59,12 @@ class S3Helper
     bucket_name = fname_array[0]
     key_name = fname_array[1].chomp('/') + '/'
     Dir.glob("*.*").each do |f|
-      unless exclude_list.nil? && exclude_list.include?(f)
+      unless (! exclude_list.nil?) && exclude_list.include?(f)
         key = RightAws::S3::Key.create( bucket = RightAws::S3::Bucket.create(@s3, bucket_name, false),
                                         "#{key_name}#{f}")
         key.data = File.new(f).read
         key.put
+        DaemonKit.logger.info "Uploaded #{f} --> #{bucket}:#{key.to_s}"
       end
     end
     

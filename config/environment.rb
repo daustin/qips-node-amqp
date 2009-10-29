@@ -19,7 +19,7 @@ ALT_INSTANCE_ID = 'i-abcd1234'
 WORK_DIR = '/Users/daustin/scratch'
 
 #get AWS creds for s3
-require File.join(File.dirname(__FILE__), 'sqs')
+require File.join(File.dirname(__FILE__), 'aws')
 
 # Boot up
 require File.join(File.dirname(__FILE__), 'boot')

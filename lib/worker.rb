@@ -22,7 +22,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
   on_complete do |workitem|
     workitem['success'] = true
-    # @rmi.send_idle
+    # @rmi.send_idle # this doesn't work here and I don't know why!
   end
 
   ########
@@ -80,7 +80,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       unless workitem.params['input-folder'].nil?
         DaemonKit.logger.info "Found input folder #{workitem.params['input-folder']}. Downloading..."
         input_folder = workitem.params['input-folder']
-        infile_list << @s3h.download_folder(workitem.params['input-folder'], workitem.params['input-filter'])
+        infile_list = @s3h.download_folder(workitem.params['input-folder'], workitem.params['input-filter'])
       end
 
       # finally lets get previous output folder if all else fails.
@@ -88,7 +88,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       if  workitem.params['input-files'].nil? && workitem.params['input-folder'].nil? && workitem['previous_output_folder'].nil?
         DaemontKit.logger.info "Using previous output folder for inputs. Downloading..."
         input_folder =  workitem.previous_output_folder
-        infile_list << @s3h.download_folder(workitem.previous_output_folder, workitem.params['input-filter'])
+        infile_list = @s3h.download_folder(workitem.previous_output_folder, workitem.params['input-filter'])
       end
 
       DaemonKit.logger.info "Downloaded #{infile_list.size} files."
