@@ -1,23 +1,22 @@
 ####################################
 ####
 #    David Austin - ITMAT @ UPENN
-#    Interfaces to a remote resource manager via HTTP
-#    DEPRECATED
+#    Sets Stat in a YAML file
 #    
 
 require 'rubygems'
 require 'json'
 require 'net/http'
+require 'yaml'
 
-
-class ResourceManagerInterface 
+class StatusWriter 
   
   attr_reader :instance_id
 
   #calls get
-  def initialize(surl)
+  def initialize(s)
 
-    @status_url = surl
+    @status_filename = "#{DAEMON_ROOT}/#{s}"
     @instance_id = get_instance_id
   end
 
@@ -40,22 +39,19 @@ class ResourceManagerInterface
     
     timestamp = Time.new.strftime("%Y%m%d%H%M%S")
     
-    url = "#{@status_url.chomp('/')}/#{@instance_id}?state=#{state}&timestamp=#{timestamp}"
-    
-    url += "&timeout=#{timeout}" unless timeout.nil?
+    to_save = Hash.new
     
     DaemonKit.logger.info "Sending state #{state}..."
-    DaemonKit.logger.info "#{url}"
     
-    #send state to rmgr via http request
-    begin
-      resp = Net::HTTP.get_response(URI.parse(url))
+    to_save['instance_id'] = @instance_id
+    to_save['state'] = state
+    to_save['timestemp'] = timestamp
+    to_save['timeout'] = timeout unless timeout.nil?
 
-    rescue => e
-      DaemonKit.logger.error "Caught Exception while trying to set state: #{e.message}"
+    File.open( "#{@status_filename}", 'w' ) do |out|
+        YAML.dump( to_save, out)
     end
-
-    
+   
   end
 
   

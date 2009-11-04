@@ -30,8 +30,8 @@ end
 # daemon.
 
 # Here lets set our startup stuff
-DaemonKit.logger.info "Sending Status Messages to: #{STATUS_URL}"
-rmi = ResourceManagerInterface.new(STATUS_URL)
+DaemonKit.logger.info "Saving Status Messages to: #{STATUS_FILE}"
+rmi = StatusWriter.new(STATUS_FILE)
 DaemonKit.logger.info "Using instance id: #{rmi.instance_id}"
 rmi.send_idle
 

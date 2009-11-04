@@ -14,7 +14,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
   def initialize 
     @s3 = RightAws::S3.new(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-    @rmi = ResourceManagerInterface.new(STATUS_URL)
+    @rmi = StatusWriter.new(STATUS_FILE)
     @s3h = S3Helper.new(@s3)
   end
 
@@ -38,7 +38,6 @@ class Worker < DaemonKit::RuotePseudoParticipant
     end
 
     # now we start processing.
-
 
     DaemonKit.logger.info "Starting work..."
     @rmi.send("busy",  workitem.params['sqs-timeout'])
