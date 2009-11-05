@@ -1,0 +1,46 @@
+require 'rubygems'
+require 'bluepill'
+require 'logger'
+ 
+ROOT_DIR = "/Users/daustin/git_repos/qips-node-amqp"
+UID = 'daustin'
+GID = 'staff' 
+ 
+# Watch with 
+# watch -n0.2 'ps axu | egrep "(CPU|forking|bluepill|sleep)" | grep -v grep | sort' # used for sample only
+Bluepill.application(:qips_app) do |app|
+
+    app.process("qips_process") do |process|
+    
+      # I could not figure out a portable way to
+      # specify the path to the sample forking server across the diff developer laptops.
+      # Since this code is eval'ed we cannot reliably use __FILE__
+      process.start_command = "#{ROOT_DIR}/bin/qips-node-amqp"
+      process.pid_file = "#{ROOT_DIR}/qips_process.pid"
+      process.uid = "#{UID}"
+      process.gid = "#{GID}"
+      process.stop_command = "kill -INT {{PID}}"
+      
+      process.daemonize = true
+      
+      process.checks :cpu_usage, :every => 10, :below => 10, :times => [5, 5]
+      # process.checks :flapping, :times => 2, :within => 30.seconds, :retry_in => 7.seconds
+      
+      process.monitor_children do |child_process|
+         child_process.checks :cpu_usage, 
+           :every => 10, 
+           :below => 20, 
+           :times => [5, 5]
+        
+         child_process.checks :mem_usage, 
+           :every => 3, 
+           :below => 6000.kilobytes, 
+           :times => [3, 5], 
+           :fires => [:stop]
+        
+        child_process.stop_command = "kill -QUIT {{PID}}"
+        # child_process.checks :flapping, :times => 2, :within => 30.seconds, :retry_in => 7.seconds
+      end
+    end
+  
+end

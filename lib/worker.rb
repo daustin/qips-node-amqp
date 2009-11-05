@@ -9,6 +9,7 @@ require 'right_aws'
 require 's3_helper'
 require 'work_item_helper'
 require 'resource_manager_interface'
+require 'bluepill'
 
 class Worker < DaemonKit::RuotePseudoParticipant
 
@@ -40,7 +41,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
     # now we start processing.
 
     DaemonKit.logger.info "Starting work..."
-    @rmi.send("busy",  workitem.params['sqs-timeout'])
+    @rmi.send("busy",  workitem.params['sqs-timeout'], workitem.params['executable'])
 
     
     Dir.chdir(WORK_DIR) do 
@@ -96,12 +97,14 @@ class Worker < DaemonKit::RuotePseudoParticipant
       args = workitem.params['args'] ||= ''
       
       DaemonKit.logger.info "Running Command #{workitem.params['executable']} #{args}..."
-
+ 
       pipe = IO.popen( "#{workitem.params['executable']} #{args}" )
-
+      
       File.open("executable_output.txt", "w+") do |f| 
-          f.write(pipe.readlines)
+        f.write(pipe.readlines)
       end
+
+      pipe.close
 
       #now lets put the files back into the output bucket
       output_folder = workitem['previous_output_folder'] ||= workitem.params['output-folder'] ||= input_folder

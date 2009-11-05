@@ -35,7 +35,7 @@ class StatusWriter
   end
 
 
-  def send(state, timeout = nil)
+  def send(state, timeout = nil, ps = nil)
     
     timestamp = Time.new.strftime("%Y%m%d%H%M%S")
     
@@ -45,8 +45,10 @@ class StatusWriter
     
     to_save['instance_id'] = @instance_id
     to_save['state'] = state
-    to_save['timestemp'] = timestamp
+    to_save['timestamp'] = timestamp
+    to_save['ruby_pid'] = "#{Process.pid}"
     to_save['timeout'] = timeout unless timeout.nil?
+    to_save['executable'] = ps unless ps.nil?
 
     File.open( "#{@status_filename}", 'w' ) do |out|
         YAML.dump( to_save, out)

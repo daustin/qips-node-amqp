@@ -21,3 +21,4 @@ interact*.xml
 config/database.yml
 config/sqs.rb 
 config/aws.rb
+qips_process.pid
