@@ -24,7 +24,8 @@ Bluepill.application(:qips_app) do |app|
       process.daemonize = true
       
       process.checks :cpu_usage, :every => 10, :below => 10, :times => [5, 5]
-      # process.checks :flapping, :times => 2, :within => 30.seconds, :retry_in => 7.seconds
+      # process.checks :flapping, :times => 2, :within => 30.seconds
+      process.checks :mem_usage, :every => 3
       
       process.monitor_children do |child_process|
          child_process.checks :cpu_usage, 
