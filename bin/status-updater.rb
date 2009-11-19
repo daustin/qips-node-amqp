@@ -31,7 +31,13 @@ yml_hash = YAML.load(yml_file)
 # then we get process CPU
 # for now lets just add a dummy CPU
 
-yml_hash['cpu'] = 0.20
+yml_hash['system_cpu_usage'] = 0.20
+yml_hash['ruby_cpu_usage'] = 0.30
+yml_hash['system_mem_usage'] = 1234
+yml_hash['ruby_mem_usage'] = 4321
+yml_hash['top_pid'] = 2273
+yml_hash['ruby_pid_status'] = "zombie"
+
 
 # then we encode it to json and pass it back to the server
 
