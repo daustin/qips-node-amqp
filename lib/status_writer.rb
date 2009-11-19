@@ -23,6 +23,7 @@ class StatusWriter
   def get_instance_id
     #fetches instance id from AWS meta services
     begin
+      raise 'poop'
       resp = Net::HTTP.get_response(URI.parse(META_URL))
       data = resp.body
 
@@ -37,7 +38,7 @@ class StatusWriter
 
   def send(state, timeout = nil, ps = nil)
     
-    timestamp = Time.new.strftime("%Y%m%d%H%M%S")
+    timestamp = Time.new.to_s # Time.new.strftime("%Y%m%d%H%M%S %Z")
     
     to_save = Hash.new
     
