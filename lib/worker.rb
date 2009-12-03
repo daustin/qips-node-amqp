@@ -9,7 +9,6 @@ require 'right_aws'
 require 's3_helper'
 require 'work_item_helper'
 require 'resource_manager_interface'
-require 'bluepill'
 
 class Worker < DaemonKit::RuotePseudoParticipant
 
