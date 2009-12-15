@@ -104,7 +104,7 @@ yml_hash['ruby_pid_status'] = ruby_pid_status
 #yml_hash['ruby_cpu_usage'] = 0.22
 #yml_hash['system_mem_usage'] = 1234
 #yml_hash['ruby_mem_usage'] = 4321
-yml_hash['top_pid'] = 5678
+#yml_hash['top_pid'] = 5678
 #yml_hash['ruby_pid_status'] = "TEST"
 
 
