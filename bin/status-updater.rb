@@ -14,7 +14,7 @@ require 'json'
 require 'net/http'
 
 
-STATUS_FILE = './tmp/status.yml'
+STATUS_FILE = '/tmp/status.yml'
 STATUS_URL = 'http://localhost:3000/instance/set_status'
 NODE_DAEMON_PATH = '/Users/daustin/git_repos/qips-node-amqp/bin/qips-node-amqp'
 KILL_SIGNAL = 15
