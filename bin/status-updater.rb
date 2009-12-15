@@ -14,7 +14,7 @@ require 'json'
 require 'net/http'
 
 
-STATUS_FILE = '/tmp/status.yml'
+STATUS_FILE = './tmp/status.yml'
 STATUS_URL = 'http://localhost:3000/instance/set_status'
 NODE_DAEMON_PATH = '/Users/daustin/git_repos/qips-node-amqp/bin/qips-node-amqp'
 KILL_SIGNAL = 15
@@ -46,7 +46,9 @@ yml_hash = YAML.load(yml_file)
 
 daemon_proc = `ps -ef | grep -i qips-node-amqp | awk '{print $2}'`
 daemon_status = `ps --no-headers -o pid,ppid,%cpu,%mem,stime,time,sz,rss,stat,user,command -p #{daemon_proc}` 
-stat_array = status.split(' ',11)
+stat_array = daemon_status.split(' ',11)
+
+puts stat_array[0]
 
 yml_hash['ruby_pid'] = stat_array[0].strip
 ppid = stat_array[1].strip
@@ -63,6 +65,7 @@ command = stat_array[10].strip
 #System CPU Usage
 sys_cpu_stats = `w | awk '{print $11,$12,$13}'`
 sys_cpu_stats_array = sys_cpu_stats.split(',')
+puts sys_cpu_stats_array[0]
 yml_hash['system_cpu_usage'] = sys_cpu_stat_array[0]
 
 #System Memory Usage
@@ -77,26 +80,20 @@ yml_hash['top_pid'] = top_cpu_str.strip
 #Ruby PID Status
 ruby_pid_status = nil
 
-switch (stat_flag.strip) {
-  case D:
+case stat_flag.strip
+  when D
     ruby_pid_status = "Uninterruptible sleep"
-    break;
-  case R:
+  when R
     ruby_pid_status = "Running or runnable"
-    break;
-  case S:
+  when S
     ruby_pid_status = "Interruptible sleep"
-    break;
-  case T:
+  when T
     ruby_pid_status = "Stopped, either by a job control signal or because it is being traced."
-    break;
-  case X:
+  when X
     ruby_pid_status = "Dead"
-    break;
-  case Z:
+  when Z
     ruby_pid_status = "Zombie"
-    break;
-}
+end
 
 yml_hash['ruby_pid_status'] = ruby_pid_status
 
