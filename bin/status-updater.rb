@@ -44,13 +44,13 @@ yml_hash = YAML.load(yml_file)
 # then we get process CPU
 # for now lets just add a dummy CPU
 
-daemon_proc = `ps -ef | grep -i qips-node-amqp | awk '{print $2}'`
-daemon_status = `ps --no-headers -o pid,ppid,%cpu,%mem,stime,time,sz,rss,stat,user,command -p #{daemon_proc}` 
+#daemon_proc = `ps -ef | grep -i qips-node-amqp | awk '{print $2}'`
+daemon_status = `ps --no-headers -o pid,ppid,%cpu,%mem,stime,time,sz,rss,stat,user,command -p #{yml_hash['ruby_pid']}` 
 stat_array = daemon_status.split(' ',11)
 
 puts stat_array[0]
 
-yml_hash['ruby_pid'] = stat_array[0].strip
+#yml_hash['ruby_pid'] = stat_array[0].strip
 ppid = stat_array[1].strip
 yml_hash['ruby_cpu_usage'] = stat_array[2].strip
 yml_hash['ruby_mem_usage'] = stat_array[3].strip
