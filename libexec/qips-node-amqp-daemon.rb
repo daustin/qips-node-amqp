@@ -39,11 +39,11 @@ rmi.send_idle
 
 DaemonKit::RuoteParticipants.configure do |config|
   # Use AMQP as a workitem transport mechanism
-#  config.use :amqp
+  config.use :amqp
   # Register your classes as pseudo-participants, with work being delegated
   # according to the 'command' parameter passed in the process definition
-#  config.register Sample
-#  config.register Worker
+  config.register Sample
+  config.register Worker
 
 end
 

@@ -17,7 +17,7 @@
 defaults: &defaults
   user: guest
   pass: guest
-  host: localhost
+  host: www-int.awsitmat.org
   vhost: /
 
 development:
