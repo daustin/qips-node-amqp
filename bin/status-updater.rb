@@ -15,8 +15,8 @@ require 'net/http'
 
 
 STATUS_FILE = './tmp/status.yml'
-STATUS_URL = 'http://localhost:3000/instance/set_status'
-NODE_DAEMON_PATH = '/Users/daustin/git_repos/qips-node-amqp/bin/qips-node-amqp'
+STATUS_URL = 'http://www-int.awsitmat.org/qips-rmgrw-web/instance/set_status'
+NODE_DAEMON_PATH = '/opt/qips-node-amqp/bin/qips-node-amqp'
 KILL_SIGNAL = 15
 
 # Some of the more commonly used signals:
@@ -80,7 +80,7 @@ yml_hash['top_pid'] = top_cpu_str.strip
 #Ruby PID Status
 ruby_pid_status = nil
 
-case stat_flag.strip
+case stat_flag.strip[0]
   when 'D'
     ruby_pid_status = "Uninterruptible sleep"
   when 'R'
