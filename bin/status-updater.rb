@@ -63,10 +63,10 @@ proc_owner = stat_array[9].strip
 command = stat_array[10].strip
 
 #System CPU Usage
-sys_cpu_stats = `w | awk '{print $11,$12,$13}'`
+sys_cpu_stats = `w | grep average | awk '{print $8,$9,$10}'`
 sys_cpu_stats_array = sys_cpu_stats.split(',')
 puts sys_cpu_stats_array[0]
-yml_hash['system_cpu_usage'] = sys_cpu_stat_array[0]
+yml_hash['system_cpu_usage'] = sys_cpu_stats_array[0]
 
 #System Memory Usage
 sys_mem_free = `cat /proc/meminfo | grep MemFree | awk '{print $2}'`
@@ -81,17 +81,17 @@ yml_hash['top_pid'] = top_cpu_str.strip
 ruby_pid_status = nil
 
 case stat_flag.strip
-  when D
+  when 'D'
     ruby_pid_status = "Uninterruptible sleep"
-  when R
+  when 'R'
     ruby_pid_status = "Running or runnable"
-  when S
+  when 'S'
     ruby_pid_status = "Interruptible sleep"
-  when T
+  when 'T'
     ruby_pid_status = "Stopped, either by a job control signal or because it is being traced."
-  when X
+  when 'X'
     ruby_pid_status = "Dead"
-  when Z
+  when 'Z'
     ruby_pid_status = "Zombie"
 end
 
