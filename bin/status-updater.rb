@@ -44,16 +44,22 @@ yml_hash = YAML.load(yml_file)
 # then we get process CPU
 # for now lets just add a dummy CPU
 
+#System Memory Usage
+sys_mem_free = `cat /proc/meminfo | grep MemFree | awk '{print $2}'`
+sys_mem_total = `cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
+yml_hash['system_mem_usage'] = (sys_mem_total.strip.to_f - sys_mem_free.strip.to_f)
+puts (sys_mem_total.strip.to_f - sys_mem_free.strip.to_f)
+
 #daemon_proc = `ps -ef | grep -i qips-node-amqp | awk '{print $2}'`
 daemon_status = `ps --no-headers -o pid,ppid,%cpu,%mem,stime,time,sz,rss,stat,user,command -p #{yml_hash['ruby_pid']}` 
 stat_array = daemon_status.split(' ',11)
 
-puts stat_array[0]
-
 #yml_hash['ruby_pid'] = stat_array[0].strip
 ppid = stat_array[1].strip
 yml_hash['ruby_cpu_usage'] = stat_array[2].strip
-yml_hash['ruby_mem_usage'] = stat_array[3].strip
+ruby_mem_percent = (stat_array[3].strip.to_f/100)
+ruby_mem_usage = (sys_mem_total.to_f * ruby_mem_percent)
+yml_hash['ruby_mem_usage'] = ruby_mem_usage
 start_time = stat_array[4].strip
 run_time = stat_array[5].strip
 virt_mem = stat_array[6].strip
@@ -65,22 +71,17 @@ command = stat_array[10].strip
 #System CPU Usage
 sys_cpu_stats = `w | grep average | awk '{print $8,$9,$10}'`
 sys_cpu_stats_array = sys_cpu_stats.split(',')
-puts sys_cpu_stats_array[0]
 yml_hash['system_cpu_usage'] = sys_cpu_stats_array[0]
 
-#System Memory Usage
-sys_mem_free = `cat /proc/meminfo | grep MemFree | awk '{print $2}'`
-sys_mem_total = `cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
-yml_hash['system_mem_usage'] = (sys_mem_total.strip.to_i - sys_mem_free.strip.to_i)
-
 #PID with highest CPU usage
-top_cpu_str = `ps -eo pid | sort -k 1 -r | head -1`
+top_cpu_str = `ps --no-header -eo pid | sort -k 1 -r | head -1`
 yml_hash['top_pid'] = top_cpu_str.strip
 
 #Ruby PID Status
 ruby_pid_status = nil
 
-case stat_flag.strip[0]
+stat_flag_array = stat_flag.strip.split(//)
+case stat_flag_array[0]
   when 'D'
     ruby_pid_status = "Uninterruptible sleep"
   when 'R'
