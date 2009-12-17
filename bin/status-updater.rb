@@ -14,7 +14,7 @@ require 'json'
 require 'net/http'
 
 
-STATUS_FILE = './tmp/status.yml'
+STATUS_FILE = '/tmp/status.yml'
 STATUS_URL = 'http://www-int.awsitmat.org/qips-rmgr-web/instance/set_status'
 NODE_DAEMON_PATH = '/opt/qips-node-amqp/bin/qips-node-amqp'
 KILL_SIGNAL = 15

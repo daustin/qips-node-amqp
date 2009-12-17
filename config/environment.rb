@@ -10,7 +10,7 @@
 # STATUS_URL = 'http://localhost:3000/instance/set_state' # deprecated
 
 # dumps status to file so that cron can pick it up.
-STATUS_FILE = './tmp/status.yml' #relative to DAEMON_ROOT
+STATUS_FILE = '/tmp/status.yml' #relative to DAEMON_ROOT
 
 # meta url is where node looks to get it's instance ID
 META_URL = 'http://169.254.169.254/latest/meta-data/instance-id'
