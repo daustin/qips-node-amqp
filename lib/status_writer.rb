@@ -16,7 +16,7 @@ class StatusWriter
   #calls get
   def initialize(s)
 
-    @status_filename = "#{DAEMON_ROOT}/#{s}"
+    @status_filename = "#{s}"
     @instance_id = get_instance_id
   end
 
