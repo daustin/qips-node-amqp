@@ -23,6 +23,7 @@ class StatusWriter
   def get_instance_id
     #fetches instance id from AWS meta services
     begin
+      raise "poop"
       resp = Net::HTTP.get_response(URI.parse(META_URL))
       data = resp.body
 
@@ -35,7 +36,7 @@ class StatusWriter
   end
 
 
-  def send(state, timeout = nil, ps = nil)
+  def send(state, timeout = nil, ps = nil, error_message = nil)
     
     timestamp = Time.new.to_s # Time.new.strftime("%Y%m%d%H%M%S %Z")
     
@@ -49,6 +50,7 @@ class StatusWriter
     to_save['ruby_pid'] = "#{Process.pid}"
     to_save['timeout'] = timeout unless timeout.nil?
     to_save['executable'] = ps unless ps.nil?
+    to_save['error_message'] = error_message unless error_message.nil?
 
     File.open( "#{@status_filename}", 'w' ) do |out|
         YAML.dump( to_save, out)

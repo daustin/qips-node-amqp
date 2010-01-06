@@ -30,24 +30,35 @@ end
 # daemon.
 
 # Here lets set our startup stuff
-DaemonKit.logger.info "Saving Status Messages to: #{STATUS_FILE}"
 rmi = StatusWriter.new(STATUS_FILE)
 DaemonKit.logger.info "Using instance id: #{rmi.instance_id}"
+DaemonKit.logger.info "Saving Status Messages to: #{STATUS_FILE}"
 rmi.send_idle
 
 # Configuration of the remote participant shell
+begin
+  DaemonKit::RuoteParticipants.configure do |config|
+    # Use AMQP as a workitem transport mechanism
+    config.use :amqp
+    # Register your classes as pseudo-participants, with work being delegated
+    # according to the 'command' parameter passed in the process definition
+    config.register Sample
+    config.register Worker
 
-DaemonKit::RuoteParticipants.configure do |config|
-  # Use AMQP as a workitem transport mechanism
-  config.use :amqp
-  # Register your classes as pseudo-participants, with work being delegated
-  # according to the 'command' parameter passed in the process definition
-  config.register Sample
-  config.register Worker
+  end
 
+
+
+  DaemonKit::RuoteParticipants.run do
+    # Place any additional daemon-specific code in here...
+    
+  end
+
+rescue  Exception => e
+  
+  rmi.send("error", nil, nil, "#{e.class}: #{e.message}")
+  raise e
+  
 end
 
-DaemonKit::RuoteParticipants.run do
-  # Place any additional daemon-specific code in here...
 
-end
