@@ -29,9 +29,9 @@ KILL_SIGNAL = 15
 #     15      TERM (software termination signal)
 
 
-def send_status(tag,yml_hash)
+def send_status(yml_hash)
   begin
-    res = Net::HTTP.post_form(URI.parse(STATUS_URL),{tag => yml_hash.to_json})
+    res = Net::HTTP.post_form(URI.parse(STATUS_URL),{'message' => yml_hash.to_json})
     data = res.body
     kill = true if data =~ /.*KILL.*/
 
@@ -45,10 +45,9 @@ end
 
 unless File.size?(STATUS_FILE) then
   err_msg = "YAML file not found or empty: #{STATUS_FILE}"
-  puts err_msg
-  yml_hash['state'] = 'Error'
-  yml_hash['err_msg'] = err_msg
-  send_status('error_message', yml_hash)
+  yml_hash['state'] = 'error'
+  yml_hash['error_message'] = err_msg
+  send_status(yml_hash)
   exit 1  
 end
 
@@ -63,17 +62,16 @@ yml_hash = YAML.load(yml_file)
 sys_mem_free = `cat /proc/meminfo | grep MemFree | awk '{print $2}'`
 sys_mem_total = `cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
 yml_hash['system_mem_usage'] = (sys_mem_total.strip.to_f - sys_mem_free.strip.to_f)
-#puts (sys_mem_total.strip.to_f - sys_mem_free.strip.to_f)
 
 daemon_status = `ps --no-headers -o pid,ppid,%cpu,%mem,stime,time,sz,rss,stat,user,command -p #{yml_hash['ruby_pid']}` 
 stat_array = daemon_status.split(' ',11)
 
-if (stat_array.nil?)
+unless (stat_array.nil?)
   err_msg = "QIPS Node Daemon is not running"
-  puts err_msg
-  yml_hash['state'] = 'Error'
-  yml_hash['err_msg'] = err_msg
-  send_status('error_message', yml_hash)
+  yml_hash['state'] = 'error'
+  yml_hash['error_message'] = err_msg
+  puts yml_hash.to_json
+  send_status(yml_hash)
   exit 1
 end
 
@@ -133,7 +131,7 @@ puts yml_hash.to_json
 
 kill = false
 
-send_status('message', yml_hash)
+send_status(yml_hash)
 
 
 if kill
