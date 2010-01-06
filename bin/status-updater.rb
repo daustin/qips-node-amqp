@@ -41,20 +41,15 @@ yml_file = File.open(STATUS_FILE)
 yml_hash = YAML.load(yml_file)
 
 
-# then we get process CPU
-# for now lets just add a dummy CPU
-
 #System Memory Usage
 sys_mem_free = `cat /proc/meminfo | grep MemFree | awk '{print $2}'`
 sys_mem_total = `cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
 yml_hash['system_mem_usage'] = (sys_mem_total.strip.to_f - sys_mem_free.strip.to_f)
 puts (sys_mem_total.strip.to_f - sys_mem_free.strip.to_f)
 
-#daemon_proc = `ps -ef | grep -i qips-node-amqp | awk '{print $2}'`
 daemon_status = `ps --no-headers -o pid,ppid,%cpu,%mem,stime,time,sz,rss,stat,user,command -p #{yml_hash['ruby_pid']}` 
 stat_array = daemon_status.split(' ',11)
 
-#yml_hash['ruby_pid'] = stat_array[0].strip
 ppid = stat_array[1].strip
 yml_hash['ruby_cpu_usage'] = stat_array[2].strip
 ruby_mem_percent = (stat_array[3].strip.to_f/100)
@@ -98,12 +93,10 @@ end
 
 yml_hash['ruby_pid_status'] = ruby_pid_status
 
-#yml_hash['system_cpu_usage'] = 0.11
-#yml_hash['ruby_cpu_usage'] = 0.22
-#yml_hash['system_mem_usage'] = 1234
-#yml_hash['ruby_mem_usage'] = 4321
-#yml_hash['top_pid'] = 5678
-#yml_hash['ruby_pid_status'] = "TEST"
+#Child process gathering
+
+child_processes = `ps --no-headers -eo pid,ppid | grep #{yml_hash['ruby_pid']} | awk '{print $1}' | grep -iv #{yml_hash['ruby_pid']}`
+puts child_processes
 
 
 # then we encode it to json and pass it back to the server
