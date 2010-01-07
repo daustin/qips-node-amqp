@@ -66,7 +66,7 @@ yml_hash['system_mem_usage'] = (sys_mem_total.strip.to_f - sys_mem_free.strip.to
 daemon_status = `ps --no-headers -o pid,ppid,%cpu,%mem,stime,time,sz,rss,stat,user,command -p #{yml_hash['ruby_pid']}` 
 stat_array = daemon_status.split(' ',11)
 
-unless (stat_array.nil?)
+if (stat_array.nil?)
   err_msg = "QIPS Node Daemon is not running"
   yml_hash['state'] = 'error'
   yml_hash['error_message'] = err_msg
