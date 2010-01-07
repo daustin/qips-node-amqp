@@ -120,9 +120,9 @@ yml_hash['ruby_pid_status'] = ruby_pid_status
 
 #Child process gathering
 
-child_processes = `ps --no-headers -eo pid,ppid | grep #{yml_hash['ruby_pid']} | awk '{print $1}' | grep -iv #{yml_hash['ruby_pid']}`
-puts child_processes
-
+child_procs = `ps --no-headers -eo pid,ppid | grep #{yml_hash['ruby_pid']} | awk '{print $1}' | grep -iv #{yml_hash['ruby_pid']}`
+child_proc_array = child_procs.split
+yml_hash['child_procs'] = child_proc_array
 
 # then we encode it to json and pass it back to the server
 
