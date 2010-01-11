@@ -45,6 +45,7 @@ end
 
 unless File.size?(STATUS_FILE) then
   err_msg = "YAML file not found or empty: #{STATUS_FILE}"
+  yml_hash = Hash.new
   yml_hash['state'] = 'error'
   yml_hash['error_message'] = err_msg
   send_status(yml_hash)
@@ -57,6 +58,7 @@ yml_file = File.open(STATUS_FILE)
 
 yml_hash = YAML.load(yml_file)
 
+send_status(yml_hash) if yml_hash['state'].eql?('error')
 
 #System Memory Usage
 sys_mem_free = `cat /proc/meminfo | grep MemFree | awk '{print $2}'`
@@ -66,7 +68,7 @@ yml_hash['system_mem_usage'] = (sys_mem_total.strip.to_f - sys_mem_free.strip.to
 daemon_status = `ps --no-headers -o pid,ppid,%cpu,%mem,stime,time,sz,rss,stat,user,command -p #{yml_hash['ruby_pid']}` 
 stat_array = daemon_status.split(' ',11)
 
-if (stat_array.nil?)
+if (stat_array.nil? || stat_array.empty?)
   err_msg = "QIPS Node Daemon is not running"
   yml_hash['state'] = 'error'
   yml_hash['error_message'] = err_msg

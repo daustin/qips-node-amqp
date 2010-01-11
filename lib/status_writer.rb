@@ -23,7 +23,6 @@ class StatusWriter
   def get_instance_id
     #fetches instance id from AWS meta services
     begin
-      raise "poop"
       resp = Net::HTTP.get_response(URI.parse(META_URL))
       data = resp.body
 
