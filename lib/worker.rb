@@ -49,7 +49,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
       #
       # here we're going to look at a few different ways to get files.
-      #    - first we look for an array called input-files, and get them individually
+      #    - first we look for an array called input_files, and get them individually
       #    - then we'll look at input_bucket and then filter on input_filter to get other files
       #    - lastly, we'll look for previous output bucket, and get those files using filter
       #
@@ -60,10 +60,10 @@ class Worker < DaemonKit::RuotePseudoParticipant
       infile_list = Array.new
       input_folder = ''
 
-      unless workitem.params['input-files'].nil?
+      unless workitem.params['input_files'].nil?
         # now download each file
         DaemonKit.logger.info "Found Input file list. Downloading..."
-        a = workitem.params['input-files'].split
+        a = workitem.params['input_files'].split
         #get folder info
         if a[0].rindex('/').nil?
           input_folder = a[0]
@@ -76,18 +76,18 @@ class Worker < DaemonKit::RuotePseudoParticipant
       end
 
       #now lets look at the case where an entire folder is specified.  download entire folder, with filter, do the same for previous output
-      unless workitem.params['input-folder'].nil?
-        DaemonKit.logger.info "Found input folder #{workitem.params['input-folder']}. Downloading..."
-        input_folder = workitem.params['input-folder']
-        infile_list = @s3h.download_folder(workitem.params['input-folder'], workitem.params['input-filter'])
+      unless workitem.params['input_folder'].nil?
+        DaemonKit.logger.info "Found input folder #{workitem.params['input_folder']}. Downloading..."
+        input_folder = workitem.params['input_folder']
+        infile_list = @s3h.download_folder(workitem.params['input_folder'], workitem.params['input_filter'])
       end
 
       # finally lets get previous output folder if all else fails.
 
-      if  workitem.params['input-files'].nil? && workitem.params['input-folder'].nil? && workitem['previous_output_folder'].nil?
+      if  workitem.params['input_files'].nil? && workitem.params['input_folder'].nil? && workitem['previous_output_folder'].nil?
         DaemontKit.logger.info "Using previous output folder for inputs. Downloading..."
         input_folder =  workitem['previous_output_folder']
-        infile_list = @s3h.download_folder(workitem['previous_output_folder'], workitem.params['input-filter'])
+        infile_list = @s3h.download_folder(workitem['previous_output_folder'], workitem.params['input_filter'])
       end
 
       DaemonKit.logger.info "Downloaded #{infile_list.size} files."

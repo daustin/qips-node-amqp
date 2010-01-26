@@ -7,7 +7,7 @@
 
 require 'rubygems'
 require 'right_aws'
-require 'openwfe'
+require 'ruote'
 
 # Generated remote participant for the ruote workflow engine
 # (http://openwferu.rubyforge.org)
