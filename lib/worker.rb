@@ -40,7 +40,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
     # now we start processing.
 
     DaemonKit.logger.info "Starting work..."
-    @rmi.send("busy",  workitem.params['sqs-timeout'], workitem.params['executable'])
+    @rmi.send("busy",  workitem.params['sqs_timeout'], workitem.params['executable'])
 
     
     Dir.chdir(WORK_DIR) do 
@@ -106,7 +106,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       pipe.close
 
       #now lets put the files back into the output bucket
-      output_folder = workitem['previous_output_folder'] ||= workitem.params['output-folder'] ||= input_folder
+      output_folder = workitem['previous_output_folder'] ||= workitem.params['output_folder'] ||= input_folder
       
       workitem['previous_output_folder'] = output_folder # set previous output folder for future reference
       
