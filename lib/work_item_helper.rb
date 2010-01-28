@@ -1,4 +1,4 @@
-require 'openwfe'
+require 'ruote'
 
 class WorkItemHelper
 
@@ -24,20 +24,18 @@ class WorkItemHelper
 
 
   def self.decode_message (message)
-    
-    o = Base64.decode64(message)
-    o = YAML.load(o)
-    o = OpenWFE::workitem_from_h(o)
-    o
+    message = Base64.decode64(message)
+    hash = Rufus::Json.decode( message )
+    Ruote::Workitem.new( hash )
     
   end
 
   def self.encode_workitem (wi)
-    
-    msg = wi.to_h
-    msg = YAML.dump(msg)
+    msg = wi.to_h.to_json
     msg = Base64.encode64(msg)
     msg
+    
+    
   end
   
 end
