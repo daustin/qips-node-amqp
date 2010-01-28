@@ -30,6 +30,8 @@ end
 # daemon.
 
 # Here lets set our startup stuff
+DaemonKit.logger.info "Creating scratch directory: #{WORK_DIR}"
+system "mkdir -p #{WORK_DIR}"
 DaemonKit.logger.info "Fetching instance ID from meta..."
 rmi = StatusWriter.new(STATUS_FILE)
 DaemonKit.logger.info "Using instance id: #{rmi.instance_id}"
