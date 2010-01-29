@@ -57,7 +57,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       #First, lets get input files.  they should be in the form: 'mybucket:testdir/sub/file.txt'
 
       # infile list is an account of files that were downloaded
-      infile_list = Array.new
+      infile_list = Hash.new
       input_folder = ''
 
       unless workitem.params['input_files'].nil?
@@ -71,7 +71,8 @@ class Worker < DaemonKit::RuotePseudoParticipant
           input_folder = a[0][0..(a[0].rindex('/')-1)]
         end
         a.each do |f|
-          infile_list << @s3h.download(f)
+          f_name = @s3h.download(f)
+          infile_list["#{f_name}"] = `#{MD5_CMD} #{f_name}`
         end
       end
 
@@ -79,7 +80,13 @@ class Worker < DaemonKit::RuotePseudoParticipant
       unless workitem.params['input_folder'].nil?
         DaemonKit.logger.info "Found input folder #{workitem.params['input_folder']}. Downloading..."
         input_folder = workitem.params['input_folder']
-        infile_list = @s3h.download_folder(workitem.params['input_folder'], workitem.params['input_filter'])
+        infile_array = @s3h.download_folder(workitem.params['input_folder'], workitem.params['input_filter'])
+        infile_array.each do |f|
+          infile_list["#{f}"] = `#{MD5_CMD} #{f}`
+          
+        end
+        
+        
       end
 
       # finally lets get previous output folder if all else fails.
@@ -87,23 +94,26 @@ class Worker < DaemonKit::RuotePseudoParticipant
       if  workitem.params['input_files'].nil? && workitem.params['input_folder'].nil? && workitem['previous_output_folder'].nil?
         DaemontKit.logger.info "Using previous output folder for inputs. Downloading..."
         input_folder =  workitem['previous_output_folder']
-        infile_list = @s3h.download_folder(workitem['previous_output_folder'], workitem.params['input_filter'])
+        infile_array = @s3h.download_folder(workitem['previous_output_folder'], workitem.params['input_filter'])
+        infile_array.each do |f|
+          infile_list["#{f}"] = `#{MD5_CMD} #{f}`
+          
+        end
+        
       end
 
-      DaemonKit.logger.info "Downloaded #{infile_list.size} files."
+      DaemonKit.logger.info "Downloaded #{infile_list.keys.size} files."
 
       #now we run the command based on the params, and store it's output in a file
       args = workitem.params['args'] ||= ''
       
       DaemonKit.logger.info "Running Command #{workitem.params['executable']} #{args}..."
  
-      pipe = IO.popen( "#{workitem.params['executable']} #{args}" )
+      out = `#{workitem.params['executable']} #{args}`
       
-      File.open("executable_output.txt", "w+") do |f| 
-        f.write(pipe.readlines)
-      end
-
-      pipe.close
+      puts out
+      
+      File.open("#{workitem.fei['wfid']}_#{workitem.fei['expid']}_exec_output.txt", "w") { |f| f.write(out) }
 
       #now lets put the files back into the output bucket
       output_folder = workitem['previous_output_folder'] ||= workitem.params['output_folder'] ||= input_folder
@@ -112,7 +122,8 @@ class Worker < DaemonKit::RuotePseudoParticipant
       
       DaemonKit.logger.info "Uploading Output Files..."
 
-      @s3h.upload(output_folder, infile_list)
+      workitem['output_files'] = Array.new unless workitem.has_field?('output_files')
+      workitem['output_files'] << @s3h.upload(output_folder, infile_list)
       
       @rmi.send_idle
 

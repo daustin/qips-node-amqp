@@ -55,19 +55,23 @@ class S3Helper
   def upload (folder, exclude_list=nil)
     # upload all files in cwd to folder, except the ones in exclude list
     return nil unless validate_s3(folder)
+    uploaded_list = Array.new
     fname_array = folder.split(':')
     bucket_name = fname_array[0]
     key_name = fname_array[1].chomp('/') + '/'
     Dir.glob("*.*").each do |f|
-      unless (! exclude_list.nil?) && exclude_list.include?(f)
+      md5 = `#{MD5_CMD} #{f}`
+      unless (! exclude_list.nil?) && exclude_list.keys.include?(f) && exclude_list[f].eql?(md5)
         key = RightAws::S3::Key.create( bucket = RightAws::S3::Bucket.create(@s3, bucket_name, false),
                                         "#{key_name}#{f}")
         key.data = File.new(f).read
         key.put
+        uploaded_list << f
         DaemonKit.logger.info "Uploaded #{f} --> #{bucket}:#{key.to_s}"
       end
     end
     
+    return uploaded_list
     
   end
 

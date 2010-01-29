@@ -21,10 +21,18 @@ defaults: &defaults
   vhost: /
 
 development:
-  <<: *defaults
+  user: guest
+  pass: guest
+  host: localhost
+  vhost: /
+  
 
 test:
-  <<: *defaults
+  <<: *development
 
 production:
-  <<: *defaults
+  user: guest
+  pass: guest
+  host: www-int.awsitmat.org
+  vhost: /
+  

@@ -33,10 +33,10 @@ end
 DaemonKit.logger.info "Creating scratch directory: #{WORK_DIR}"
 system "mkdir -p #{WORK_DIR}"
 DaemonKit.logger.info "Fetching instance ID from meta..."
-rmi = StatusWriter.new(STATUS_FILE)
-DaemonKit.logger.info "Using instance id: #{rmi.instance_id}"
+statw = StatusWriter.new(STATUS_FILE)
+DaemonKit.logger.info "Using instance id: #{statw.instance_id}"
 DaemonKit.logger.info "Saving Status Messages to: #{STATUS_FILE}"
-rmi.send_idle
+statw.send_idle
 
 # Configuration of the remote participant shell
 begin
@@ -45,7 +45,6 @@ begin
     config.use :amqp
     # Register your classes as pseudo-participants, with work being delegated
     # according to the 'command' parameter passed in the process definition
-    config.register Sample
     config.register Worker
 
   end
@@ -59,7 +58,7 @@ begin
 
 rescue  Exception => e
   
-  rmi.send("error", nil, nil, "#{e.class}: #{e.message}")
+  statw.send("error", nil, nil, "#{e.class}: #{e.message}")
   raise e
   
 end

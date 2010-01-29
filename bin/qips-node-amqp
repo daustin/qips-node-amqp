@@ -3,5 +3,6 @@
 # Stub executable for qips-node-amqp
 
 require File.dirname(__FILE__) + '/../config/environment'
+require File.dirname(__FILE__) + '/../config/environments/' + DAEMON_ENV
 
 DaemonKit::Application.exec( DAEMON_ROOT + '/libexec/qips-node-amqp-daemon.rb' )
