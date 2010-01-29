@@ -3,6 +3,5 @@
 
 require 'worker'
 require 'work_item_helper'
-require 'resource_manager_interface'
 require 's3_helper'
 require 'status_writer'

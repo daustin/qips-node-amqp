@@ -8,7 +8,6 @@ require 'rubygems'
 require 'right_aws'
 require 's3_helper'
 require 'work_item_helper'
-require 'resource_manager_interface'
 
 class Worker < DaemonKit::RuotePseudoParticipant
 
