@@ -96,7 +96,7 @@ sys_cpu_stats_array = sys_cpu_stats.split(',')
 yml_hash['system_cpu_usage'] = sys_cpu_stats_array[0]
 
 #PID with highest CPU usage
-top_cpu_str = `ps --no-header -eo pid | sort -k 1 -r | head -1`
+top_cpu_str = `ps --no-header -eo pid --sort pcpu |tail -1`
 yml_hash['top_pid'] = top_cpu_str.strip
 
 #Ruby PID Status
