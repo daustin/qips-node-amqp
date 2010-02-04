@@ -121,8 +121,8 @@ class Worker < DaemonKit::RuotePseudoParticipant
       
       DaemonKit.logger.info "Uploading Output Files..."
 
-      workitem['output_files'] = Array.new unless workitem.has_field?('output_files')
-      workitem['output_files'] << @s3h.upload(output_folder, infile_list)
+      workitem["output_files_#{workitem.fei['expid']}"] = Array.new 
+      workitem["output_files_#{workitem.fei['expid']}"] << @s3h.upload(output_folder, infile_list)
       
       @rmi.send_idle
 
