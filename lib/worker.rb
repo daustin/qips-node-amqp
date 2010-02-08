@@ -1,7 +1,7 @@
 #
 # Sample pseudo participant
 #
-# called with the following workitem params:  :command => '/worker/<method>' :executable => 'ls -la' :args => ' arg1 arg2' :jid => '1234'
+# called with the following workitem params:  :command => '<method>' :executable => 'ls -la' :args => ' arg1 arg2' :jid => '1234'
 #
 
 require 'rubygems'
@@ -90,17 +90,22 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
       # finally lets get previous output folder if all else fails.
 
-      if  workitem.params['input_files'].nil? && workitem.params['input_folder'].nil? && workitem['previous_output_folder'].nil?
-        DaemontKit.logger.info "Using previous output folder for inputs. Downloading..."
-        input_folder =  workitem['previous_output_folder']
-        infile_array = @s3h.download_folder(workitem['previous_output_folder'], workitem.params['input_filter'])
-        infile_array.each do |f|
-          infile_list["#{f}"] = `#{MD5_CMD} #{f}`
-          
+      if  workitem.params['input_files'].nil? && workitem.params['input_folder'].nil?
+        DaemonKit.logger.info "Using previous output files for inputs. Downloading..."
+        a = workitem['previous_output_files']
+        #get folder info
+        if a[0].rindex('/').nil?
+          input_folder = a[0]
+        else
+          input_folder = a[0][0..(a[0].rindex('/')-1)]
         end
-        
+        a.each do |f|
+          f_name = @s3h.download(f)
+          infile_list["#{f_name}"] = `#{MD5_CMD} #{f_name}`
+        end
+  
       end
-
+      
       DaemonKit.logger.info "Downloaded #{infile_list.keys.size} files."
 
       #now we run the command based on the params, and store it's output in a file
@@ -122,7 +127,8 @@ class Worker < DaemonKit::RuotePseudoParticipant
       DaemonKit.logger.info "Uploading Output Files..."
 
       workitem["output_files_#{workitem.fei['expid']}"] = Array.new 
-      workitem["output_files_#{workitem.fei['expid']}"] << @s3h.upload(output_folder, infile_list)
+      workitem["output_files_#{workitem.fei['expid']}"] = @s3h.upload(output_folder, infile_list)
+      
       
       @rmi.send_idle
 
