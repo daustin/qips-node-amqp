@@ -66,7 +66,7 @@ class S3Helper
                                         "#{key_name}#{f}")
         key.data = File.new(f).read
         key.put
-        uploaded_list << "#{bucket}:#{key.to_s}"
+        uploaded_list << "#{bucket}:#{key.to_s}" if f.index('exec_output.txt').nil?
         DaemonKit.logger.info "Uploaded #{f} --> #{bucket}:#{key.to_s}"
       end
     end

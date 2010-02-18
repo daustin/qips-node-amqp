@@ -62,7 +62,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       unless workitem.params['input_files'].nil?
         # now download each file
         DaemonKit.logger.info "Found Input file list. Downloading..."
-        a = workitem.params['input_files'].split
+        a = workitem.params['input_files'].split(",")
         #get folder info
         if a[0].rindex('/').nil?
           input_folder = a[0]
@@ -126,8 +126,8 @@ class Worker < DaemonKit::RuotePseudoParticipant
       
       DaemonKit.logger.info "Uploading Output Files..."
 
-      workitem["output_files_#{workitem.fei['expid']}"] = Array.new 
-      workitem["output_files_#{workitem.fei['expid']}"] = @s3h.upload(output_folder, infile_list)
+      workitem["output_files"] = Array.new 
+      workitem["output_files"] = @s3h.upload(output_folder, infile_list)
       
       
       @rmi.send_idle
