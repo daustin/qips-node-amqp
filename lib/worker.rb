@@ -58,6 +58,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       # infile list is an account of files that were downloaded
       infile_list = Hash.new
       input_folder = ''
+      infile_basenames = Array.new
 
       unless workitem.params['input_files'].nil?
         # now download each file
@@ -71,49 +72,23 @@ class Worker < DaemonKit::RuotePseudoParticipant
         end
         a.each do |f|
           f_name = @s3h.download(f)
+          infile_basenames << f_name
           infile_list["#{f_name}"] = `#{MD5_CMD} #{f_name}`
         end
       end
 
-      #now lets look at the case where an entire folder is specified.  download entire folder, with filter, do the same for previous output
-      unless workitem.params['input_folder'].nil?
-        DaemonKit.logger.info "Found input folder #{workitem.params['input_folder']}. Downloading..."
-        input_folder = workitem.params['input_folder']
-        infile_array = @s3h.download_folder(workitem.params['input_folder'], workitem.params['input_filter'])
-        infile_array.each do |f|
-          infile_list["#{f}"] = `#{MD5_CMD} #{f}`
-          
-        end
-        
-        
-      end
-
-      # finally lets get previous output folder if all else fails.
-
-      if  workitem.params['input_files'].nil? && workitem.params['input_folder'].nil?
-        DaemonKit.logger.info "Using previous output files for inputs. Downloading..."
-        a = workitem['previous_output_files']
-        #get folder info
-        if a[0].rindex('/').nil?
-          input_folder = a[0]
-        else
-          input_folder = a[0][0..(a[0].rindex('/')-1)]
-        end
-        a.each do |f|
-          f_name = @s3h.download(f)
-          infile_list["#{f_name}"] = `#{MD5_CMD} #{f_name}`
-        end
-  
-      end
-      
       DaemonKit.logger.info "Downloaded #{infile_list.keys.size} files."
 
       #now we run the command based on the params, and store it's output in a file
       args = workitem.params['args'] ||= ''
       
-      DaemonKit.logger.info "Running Command #{workitem.params['executable']} #{args}..."
+      infiles_arg = ''
+      
+      infiles_arg = "--input_files='#{infile_basenames.join(',')}'" if workitem.params['pass_filenames'].eql?("true")
+      
+      DaemonKit.logger.info "Running Command #{workitem.params['executable']} #{args} #{infiles_arg}..."
  
-      out = `#{workitem.params['executable']} #{args}`
+      out = `#{workitem.params['executable']} #{args} #{infiles_arg}`
       
       puts out
       
@@ -128,7 +103,6 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
       workitem["output_files"] = Array.new 
       workitem["output_files"] = @s3h.upload(output_folder, infile_list)
-      
       
       @rmi.send_idle
 
