@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{qips-node-amqp}
-  s.version = "0.3.1"
+  s.version = "0.4.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["David Austin", "Andrew Brader"]
-  s.date = %q{2010-01-29}
+  s.date = %q{2010-03-01}
   s.description = %q{Listens for jobs on a rabbit server, works closely with qipr-rmgr}
   s.email = %q{daustin@mail.med.upenn.edu}
   s.executables = ["qips-node-amqp", "status-updater.rb"]

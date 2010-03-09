@@ -64,12 +64,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
         # now download each file
         DaemonKit.logger.info "Found Input file list. Downloading..."
         a = workitem.params['input_files'].split(",")
-        #get folder info
-        if a[0].rindex('/').nil?
-          input_folder = a[0]
-        else
-          input_folder = a[0][0..(a[0].rindex('/')-1)]
-        end
+        a << workitem.params['params_file'] unless (workitem.params['params_file'].nil? || workitem.params['params_file'].empty?)
         a.each do |f|
           f_name = @s3h.download(f)
           infile_basenames << f_name
