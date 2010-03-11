@@ -72,6 +72,19 @@ class Worker < DaemonKit::RuotePseudoParticipant
         end
       end
 
+      unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
+        # now download each file
+        DaemonKit.logger.info "Found Input file list. Downloading..."
+        a = workitem.params['aux_files'].split(",")
+        a << workitem.params['params_file'] unless (workitem.params['params_file'].nil? || workitem.params['params_file'].empty?)
+        a.each do |f|
+          f_name = @s3h.download(f)
+          infile_basenames << f_name
+          infile_list["#{f_name}"] = `#{MD5_CMD} #{f_name}`
+        end
+      end
+      
+
       DaemonKit.logger.info "Downloaded #{infile_list.keys.size} files."
 
       #now we run the command based on the params, and store it's output in a file
