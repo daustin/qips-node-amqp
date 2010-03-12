@@ -59,6 +59,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       infile_list = Hash.new
       input_folder = ''
       infile_basenames = Array.new
+      auxfile_basenames = Array.new
 
       unless workitem.params['input_files'].nil?
         # now download each file
@@ -76,10 +77,9 @@ class Worker < DaemonKit::RuotePseudoParticipant
         # now download each file
         DaemonKit.logger.info "Found Input file list. Downloading..."
         a = workitem.params['aux_files'].split(",")
-        a << workitem.params['params_file'] unless (workitem.params['params_file'].nil? || workitem.params['params_file'].empty?)
         a.each do |f|
           f_name = @s3h.download(f)
-          infile_basenames << f_name
+          auxfile_basenames << f_name
           infile_list["#{f_name}"] = `#{MD5_CMD} #{f_name}`
         end
       end
