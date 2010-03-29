@@ -33,10 +33,10 @@ end
 DaemonKit.logger.info "Creating scratch directory: #{WORK_DIR}"
 system "mkdir -p #{WORK_DIR}"
 DaemonKit.logger.info "Fetching instance ID from meta..."
-statw = StatusWriter.new(STATUS_FILE)
-DaemonKit.logger.info "Using instance id: #{statw.instance_id}"
+srw = StatusWriter.new(STATUS_FILE)
+DaemonKit.logger.info "Using instance id: #{srw.instance_id}"
 DaemonKit.logger.info "Saving Status Messages to: #{STATUS_FILE}"
-statw.send_idle
+srw.send_idle
 
 # Configuration of the remote participant shell
 begin
@@ -58,7 +58,7 @@ begin
 
 rescue  Exception => e
   
-  statw.send("error", nil, nil, "#{e.class}: #{e.message}")
+  srw.send("error", nil, nil, "#{e.class}: #{e.message}")
   raise e
   
 end

@@ -1,7 +1,7 @@
 #################################################
 ###
 ##     David Austin - ITMAT @ UPENN
-#      S3 Helper  downloads and uploads files 
+#      S3 Helper  downloads and uploads files and validates s3 paths 
 #
 #
 ####  
@@ -14,6 +14,25 @@ class S3Helper
     @s3 = s3
 
   end
+
+  #################
+  #
+  #  expects an array of s3 paths. returns an array of basenames
+  #
+
+  def download_all (file_array)
+    basenames = Array.new
+    file_array.each do |fn|
+      download(fn)
+      basenames << fn unless fn.nil?      
+    end
+    
+  end
+
+  ######################
+  #
+  #  downloads a single s3 file from path. returns basename
+  #
 
   def download (file)
     return nil unless validate_s3(file)
@@ -29,44 +48,41 @@ class S3Helper
     return fname
     
   end
+  
+  
 
-  def download_folder (folder, filter=nil)
-    flist = Array.new
-    return flist unless validate_s3(folder)
-    #get all keys from folder, filtering out
+  ###############################################
+  #
+  #   uploads a single file to an s3 folder. 
+  #
+
+  def upload (fname, folder)
+    
+    return nil unless validate_s3(folder)
     fname_array = folder.split(':')
     bucket_name = fname_array[0]
     key_name = fname_array[1].chomp('/') + '/'
-    bucket = RightAws::S3::Bucket.create(@s3, bucket_name, false)
-    keys = bucket.keys(:prefix => key_name)
-    filter = '.+' if filter.nil?
-    # download all files from folder, applying filter to keys, returns array of basenames
-    keys.each do |k|
-      # now we enumerate through each key and download it, if matches
-      fname = File.basename(k.to_s)
-      flist << download("#{bucket_name}:#{k.to_s}") if fname.match(filter)
-                           
-    end
-
-    return flist
-
+    key = RightAws::S3::Key.create( bucket = RightAws::S3::Bucket.create(@s3, bucket_name, false), "#{key_name}#{fname}")
+    key.data = File.new(fname).read
+    key.put
+    DaemonKit.logger.info "Uploaded #{f} --> #{bucket}:#{key.to_s}"
+    
   end
 
-  def upload (folder, exclude_list=nil)
-    # upload all files in cwd to folder, except the ones in exclude list
+
+  #######################################################################
+  #
+  #  uploads all files in array, unless they appear in the exclude list or have same md5 in list
+  #
+  
+  def upload_all (basenames, folder, exclude_list=nil, carry_exec_out=false)
     return nil unless validate_s3(folder)
     uploaded_list = Array.new
-    fname_array = folder.split(':')
-    bucket_name = fname_array[0]
-    key_name = fname_array[1].chomp('/') + '/'
-    Dir.glob("*.*").each do |f|
+    basenames.each do |f|
       md5 = `#{MD5_CMD} #{f}`
       unless (! exclude_list.nil?) && exclude_list.keys.include?(f) && exclude_list[f].eql?(md5)
-        key = RightAws::S3::Key.create( bucket = RightAws::S3::Bucket.create(@s3, bucket_name, false),
-                                        "#{key_name}#{f}")
-        key.data = File.new(f).read
-        key.put
-        uploaded_list << "#{bucket}:#{key.to_s}" if f.index('exec_output.txt').nil?
+        upload(f, folder)
+        uploaded_list << "#{bucket}:#{key.to_s}" if f.index('exec_output.txt').nil? || carry_exec_out
         DaemonKit.logger.info "Uploaded #{f} --> #{bucket}:#{key.to_s}"
       end
     end
@@ -74,7 +90,47 @@ class S3Helper
     return uploaded_list
     
   end
+  
+  ###########################################
+  #
+  #  uploads all files in cwd, unless they appear in the exclude list
+  #
+  
+  def upload_cwd (folder, exclude_list=nil, carry_exec_out=false)
+    # upload all files in cwd to folder, except the ones in exclude list
+    return nil unless validate_s3(folder)
+    basenames = Dir.glob("*.*")
+    return upload_all(basenames, folder, exclude_list, carry_exec_out)
+    
+  end
 
+  #############################################
+  #
+  # returns a hash of basenames and their current md5sums for comparison.
+  # feed this list to upload methods
+  #
+  
+  def get_md5_sums(basenames)
+    
+    h = Hash.new
+    basenames.each do |f|
+      
+      h["#{f}"] = `#{MD5_CMD} #{f}`
+      
+    end
+    
+    return h
+    
+    
+  end
+
+
+
+
+  ############################################
+  #
+  #  make sure s3 path is valid
+  #
 
   def validate_s3 (s)
     if s.index(':').nil?

@@ -13,7 +13,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
   def initialize 
     @s3 = RightAws::S3.new(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-    @rmi = StatusWriter.new(STATUS_FILE)
+    @swr = StatusWriter.new(STATUS_FILE)
     @s3h = S3Helper.new(@s3)
   end
 
@@ -21,7 +21,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
   on_complete do |workitem|
     workitem['success'] = true
-    # @rmi.send_idle # this doesn't work here and I don't know why!
+    # @swr.send_idle # this doesn't work here and I don't know why!
   end
 
   ########
@@ -39,7 +39,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
     # now we start processing.
 
     DaemonKit.logger.info "Starting work..."
-    @rmi.send("busy",  workitem.params['sqs_timeout'], workitem.params['executable'])
+    @swr.send("busy",  workitem.params['exec_timeout'], workitem.params['executable'])
 
     
     Dir.chdir(WORK_DIR) do 
@@ -61,7 +61,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       infile_basenames = Array.new
       auxfile_basenames = Array.new
 
-      unless workitem.params['input_files'].nil?
+      unless workitem.params['input_files'].nil? || workitem.params['input_files'].empty?
         # now download each file
         DaemonKit.logger.info "Found Input file list. Downloading..."
         a = workitem.params['input_files'].split(",")
@@ -75,7 +75,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
       unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
         # now download each file
-        DaemonKit.logger.info "Found Input file list. Downloading..."
+        DaemonKit.logger.info "Found Aux file list. Downloading..."
         a = workitem.params['aux_files'].split(",")
         a.each do |f|
           f_name = @s3h.download(f)
@@ -112,7 +112,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       workitem["output_files"] = Array.new 
       workitem["output_files"] = @s3h.upload(output_folder, infile_list)
       
-      @rmi.send_idle
+      @swr.send_idle
 
     end
 
@@ -122,12 +122,12 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
   def err
     raise ArgumentError, "Invalid workitem.  Check parameters."
-    @rmi.send_error
+    @swr.send_error
   end
 
   def dammit( exception )
     workitem["error"] = exception.message
-    @rmi.send_error
+    @swr.send_error
   end
 
 end
