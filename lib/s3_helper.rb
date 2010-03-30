@@ -83,7 +83,6 @@ class S3Helper
       unless (! exclude_list.nil?) && exclude_list.keys.include?(f) && exclude_list[f].eql?(md5)
         upload(f, folder)
         uploaded_list << "#{bucket}:#{key.to_s}" if f.index('exec_output.txt').nil? || carry_exec_out
-        DaemonKit.logger.info "Uploaded #{f} --> #{bucket}:#{key.to_s}"
       end
     end
     
@@ -94,6 +93,7 @@ class S3Helper
   ###########################################
   #
   #  uploads all files in cwd, unless they appear in the exclude list
+  #  may be deprecated 
   #
   
   def upload_cwd (folder, exclude_list=nil, carry_exec_out=false)

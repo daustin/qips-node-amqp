@@ -8,6 +8,7 @@ require 'rubygems'
 require 'right_aws'
 require 's3_helper'
 require 'work_item_helper'
+require 'json'
 
 class Worker < DaemonKit::RuotePseudoParticipant
 
@@ -47,7 +48,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       system "rm -rf *"
 
       #
-      # here we're going to look at a few different ways to get files.
+      #   here we're going to look at a few different ways to get files.
       #    - first we look for an array called input_files, and get them individually
       #    - then we'll look at input_bucket and then filter on input_filter to get other files
       #    - lastly, we'll look for previous output bucket, and get those files using filter
@@ -57,34 +58,21 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
       # infile list is an account of files that were downloaded
       infile_list = Hash.new
-      input_folder = ''
       infile_basenames = Array.new
       auxfile_basenames = Array.new
+      params_basenames = Array.new
 
-      unless workitem.params['input_files'].nil? || workitem.params['input_files'].empty?
-        # now download each file
-        DaemonKit.logger.info "Found Input file list. Downloading..."
-        a = workitem.params['input_files'].split(",")
-        a << workitem.params['params_file'] unless (workitem.params['params_file'].nil? || workitem.params['params_file'].empty?)
-        a.each do |f|
-          f_name = @s3h.download(f)
-          infile_basenames << f_name
-          infile_list["#{f_name}"] = `#{MD5_CMD} #{f_name}`
-        end
-      end
-
-      unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
-        # now download each file
-        DaemonKit.logger.info "Found Aux file list. Downloading..."
-        a = workitem.params['aux_files'].split(",")
-        a.each do |f|
-          f_name = @s3h.download(f)
-          auxfile_basenames << f_name
-          infile_list["#{f_name}"] = `#{MD5_CMD} #{f_name}`
-        end
-      end
+      DaemonKit.logger.info "Downloading input files..."
+      infile_basenames = @s3h.download_all(workitem.params['input_files'].split(',')) unless workitem.params['input_files'].nil? || workitem.params['input_files'].empty?
       
-
+      DaemonKit.logger.info "Downloading params file..."
+      params_basenames = @s3h.download_all(workitem.params['params_file'].split(',')) unless (workitem.params['params_file'].nil? || workitem.params['params_file'].empty?)
+      
+      DaemonKit.logger.info "Downloading auxiliary files..."
+      auxfile_basenames = @s3h.download_all(workitem.params['aux_files'].split(',')) unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
+      
+      infile_list = @s3h.get_md5_sums(infile_basenames + auxfile_basenames + params_basenames) # deprecated for now
+      
       DaemonKit.logger.info "Downloaded #{infile_list.keys.size} files."
 
       #now we run the command based on the params, and store it's output in a file
@@ -95,23 +83,56 @@ class Worker < DaemonKit::RuotePseudoParticipant
       infiles_arg = "--input_files='#{infile_basenames.join(',')}'" if workitem.params['pass_filenames'].eql?("true")
       
       DaemonKit.logger.info "Running Command #{workitem.params['executable']} #{args} #{infiles_arg}..."
- 
+  
+      #now we examine out and see if we can parse it 
       out = `#{workitem.params['executable']} #{args} #{infiles_arg}`
       
+      DaemonKit.logger.info "Found output:"
       puts out
       
-      File.open("#{workitem.fei['wfid']}_#{workitem.fei['expid']}_exec_output.txt", "w") { |f| f.write(out) }
-
-      #now lets put the files back into the output bucket
-      output_folder = workitem['previous_output_folder'] ||= workitem.params['output_folder'] ||= input_folder
+      output_hash = Hash.new
+      
+      begin
+        
+        output_hash = JSON.parse(out)
+        raise "not a hash" unless output_hash.class.to_s.eql?("Hash")
+        
+      rescue
+        
+        DaemonKit.logger.info "Could not parse executable's output as JSON.  Using raw output..."
+        output_hash = Hash.new
+        output_hash["result"] = out
+        
+      end
+      
+      #now lets upload and set output files based on hash
+      
+      #get the apropriate output bucket
+      output_folder = workitem['previous_output_folder'] ||= workitem.params['output_folder']
       
       workitem['previous_output_folder'] = output_folder # set previous output folder for future reference
       
       DaemonKit.logger.info "Uploading Output Files..."
-
-      workitem["output_files"] = Array.new 
-      workitem["output_files"] = @s3h.upload(output_folder, infile_list)
       
+      #first dup upload / output files if necessary
+      output_hash["upload_files"] = output_hash["output_files"] if output_hash.has_key?("output_files") && ! output_hash.has_key?("upload_files")
+      output_hash["output_files"] = output_hash["upload_files"] if output_hash.has_key?("upload_files") && ! output_hash.has_key?("output_files")
+      
+      #now lets set output & upload
+      
+      if output_hash.hash_key?("output_files") && output_hash.has_key?("upload_files")
+        #use hash values
+        @s3h.upload_all(output_hash["upload_files"], output_folder)
+        workitem["output_files"] = Array.new 
+        workitem["output_files"] = output_hash["output_files"]
+      
+      end
+            
+      #set executable output 
+      workitem["exec_out"] = output_hash["exec_out"]
+      
+      workitem["exec_error"] = output_hash["exec_error"] if output_hash.hash_key?("exec_error")
+            
       @swr.send_idle
 
     end
