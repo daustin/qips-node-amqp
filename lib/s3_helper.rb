@@ -23,10 +23,10 @@ class S3Helper
   def download_all (file_array)
     basenames = Array.new
     file_array.each do |fn|
-      download(fn)
-      basenames << fn unless fn.nil?      
+      bname = download(fn)
+      basenames << bname unless bname.nil?      
     end
-    
+    return basenames
   end
 
   ######################
@@ -65,7 +65,8 @@ class S3Helper
     key = RightAws::S3::Key.create( bucket = RightAws::S3::Bucket.create(@s3, bucket_name, false), "#{key_name}#{fname}")
     key.data = File.new(fname).read
     key.put
-    DaemonKit.logger.info "Uploaded #{f} --> #{bucket}:#{key.to_s}"
+    DaemonKit.logger.info "Uploaded #{fname} --> #{bucket_name}:#{key.to_s}"
+    return "#{bucket_name}:#{key.to_s}"
     
   end
 
@@ -81,8 +82,8 @@ class S3Helper
     basenames.each do |f|
       md5 = `#{MD5_CMD} #{f}`
       unless (! exclude_list.nil?) && exclude_list.keys.include?(f) && exclude_list[f].eql?(md5)
-        upload(f, folder)
-        uploaded_list << "#{bucket}:#{key.to_s}" if f.index('exec_output.txt').nil? || carry_exec_out
+        s3path = upload(f, folder)
+        uploaded_list << "#{s3path}" if f.index('exec_output.txt').nil? || carry_exec_out || s3path.nil?
       end
     end
     

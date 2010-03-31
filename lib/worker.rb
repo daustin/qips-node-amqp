@@ -105,6 +105,11 @@ class Worker < DaemonKit::RuotePseudoParticipant
         
       end
       
+      # set executable result and crash on error
+      workitem["result"] = output_hash["result"]
+      
+      raise "#{output_hash['error']}" if output_hash.has_key?("error")      
+      
       #now lets upload and set output files based on hash
       
       #get the apropriate output bucket
@@ -120,18 +125,16 @@ class Worker < DaemonKit::RuotePseudoParticipant
       
       #now lets set output & upload
       
-      if output_hash.hash_key?("output_files") && output_hash.has_key?("upload_files")
+      if output_hash.has_key?("output_files") && output_hash.has_key?("upload_files")
         #use hash values
         @s3h.upload_all(output_hash["upload_files"], output_folder)
+        
+        #need to pass the output folder along with output_files
+        s3_outs = output_hash["output_files"].collect {|o| "#{output_folder}#{o}"}
         workitem["output_files"] = Array.new 
-        workitem["output_files"] = output_hash["output_files"]
+        workitem["output_files"] = s3_outs
       
       end
-            
-      #set executable output 
-      workitem["exec_out"] = output_hash["exec_out"]
-      
-      workitem["exec_error"] = output_hash["exec_error"] if output_hash.hash_key?("exec_error")
             
       @swr.send_idle
 
