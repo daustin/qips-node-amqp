@@ -35,7 +35,7 @@ class S3Helper
   #
 
   def download (file)
-    return nil unless validate_s3(file)
+    raise "ERROR: Invalid s3 location: #{file}" unless validate_s3(file)
     fname_array = file.split(':')
     bucket_name = fname_array[0]
     key_name = fname_array[1]
@@ -43,9 +43,20 @@ class S3Helper
     bucket = RightAws::S3::Bucket.create(@s3, bucket_name, false)
     key = RightAws::S3::Key.create(bucket, key_name)
     fname = File.basename(key_name)
-    File.open(fname, "w+") { |f| f.write(key.data) }
-    DaemonKit.logger.info "Downloaded #{bucket}:#{key.to_s} --> #{fname} "
-    return fname
+    
+    if key.exists?
+
+      File.open(fname, "w+") { |f| f.write(key.data) }
+      DaemonKit.logger.info "Downloaded #{bucket}:#{key.to_s} --> #{fname} "
+      return fname
+
+    else
+      # return error string
+      DaemonKit.logger.info " File not found on S3: #{bucket}:#{key.to_s}"
+      raise  "File not found on S3: #{bucket}:#{key.to_s} "
+      
+    end
+    
     
   end
   
@@ -58,11 +69,11 @@ class S3Helper
 
   def upload (fname, folder)
     
-    return nil unless validate_s3(folder)
+    raise "ERROR: Invalid S3 location: #{folder}" unless validate_s3(folder)
     fname_array = folder.split(':')
     bucket_name = fname_array[0]
     key_name = fname_array[1].chomp('/') + '/'
-    key = RightAws::S3::Key.create( bucket = RightAws::S3::Bucket.create(@s3, bucket_name, false), "#{key_name}#{fname}")
+    key = RightAws::S3::Key.create( bucket = RightAws::S3::Bucket.create(@s3, bucket_name, true), "#{key_name}#{fname}")
     key.data = File.new(fname).read
     key.put
     DaemonKit.logger.info "Uploaded #{fname} --> #{bucket_name}:#{key.to_s}"
@@ -77,7 +88,7 @@ class S3Helper
   #
   
   def upload_all (basenames, folder, exclude_list=nil, carry_exec_out=false)
-    return nil unless validate_s3(folder)
+    raise "ERROR: Invalid S3 location: #{folder}" unless validate_s3(folder)
     uploaded_list = Array.new
     basenames.each do |f|
       md5 = `#{MD5_CMD} #{f}`
@@ -99,7 +110,7 @@ class S3Helper
   
   def upload_cwd (folder, exclude_list=nil, carry_exec_out=false)
     # upload all files in cwd to folder, except the ones in exclude list
-    return nil unless validate_s3(folder)
+    raise "ERROR: Invalid S3 location: #{folder}" unless validate_s3(folder)
     basenames = Dir.glob("*.*")
     return upload_all(basenames, folder, exclude_list, carry_exec_out)
     
