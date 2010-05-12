@@ -1,3 +1,18 @@
+===========================================================
+
+QIPS NODE AMQP - meant to be run on worker node for QIPS
+
+- Pulls Ruote workitems from AMQP Queue
+- Pulls inputs from either LIMS or from S3
+- Uploads outputs back into S3 or LIMS
+- Sends status updates to RMGR when busy, idle, error, etc
+- Expects to run scripts that conform to  certain spec for 
+  output and error processing.  see qips-extras!
+
+==========================================================
+
+
+
 DaemonKit README
 ================
 
