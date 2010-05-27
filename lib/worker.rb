@@ -9,6 +9,7 @@ require 'right_aws'
 require 's3_helper'
 require 'work_item_helper'
 require 'json'
+require 'item'
 
 class Worker < DaemonKit::RuotePseudoParticipant
 
@@ -63,13 +64,15 @@ class Worker < DaemonKit::RuotePseudoParticipant
       params_basenames = Array.new
 
       DaemonKit.logger.info "Downloading input files..."
-      infile_basenames = @s3h.download_all(workitem.params['input_files'].split(',')) unless workitem.params['input_files'].nil? || workitem.params['input_files'].empty?
+      infile_basenames = Item.download(workitem.params['input_files'].split(',')) unless workitem.params['input_files'].nil? || workitem.params['input_files'].empty?
+      # infile_basenames = @s3h.download_all(workitem.params['input_files'].split(',')) unless workitem.params['input_files'].nil? || workitem.params['input_files'].empty?
       
       DaemonKit.logger.info "Downloading params file..."
       params_basenames = @s3h.download_all(workitem.params['params_file'].split(',')) unless (workitem.params['params_file'].nil? || workitem.params['params_file'].empty?)
       
       DaemonKit.logger.info "Downloading auxiliary files..."
-      auxfile_basenames = @s3h.download_all(workitem.params['aux_files'].split(',')) unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
+      auxfile_basenames = Item.download(workitem.params['aux_files'].split(',')) unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
+      # auxfile_basenames = @s3h.download_all(workitem.params['aux_files'].split(',')) unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
       
       infile_list = @s3h.get_md5_sums(infile_basenames + auxfile_basenames + params_basenames) # deprecated for now
       

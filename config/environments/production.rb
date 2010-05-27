@@ -17,3 +17,9 @@ WORK_DIR = '/tmp/scratch'
 
 #MD5 command to generate md5sums of files to verify they need to be uploaded
 MD5_CMD = 'md5 -q'
+
+#active resource lims site
+ILIMS_SITE = 'http://admin:admin@localhost:3002'
+
+# wget command to download from ilims
+WGET_CMD = 'wget --no-check '
