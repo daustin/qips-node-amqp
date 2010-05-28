@@ -10,6 +10,7 @@ require 's3_helper'
 require 'work_item_helper'
 require 'json'
 require 'item'
+require 'HTTPClient'
 
 class Worker < DaemonKit::RuotePseudoParticipant
 
@@ -74,7 +75,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       auxfile_basenames = Item.download(workitem.params['aux_files'].split(',')) unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
       # auxfile_basenames = @s3h.download_all(workitem.params['aux_files'].split(',')) unless workitem.params['aux_files'].nil? || workitem.params['aux_files'].empty?
       
-      infile_list = @s3h.get_md5_sums(infile_basenames + auxfile_basenames + params_basenames) # deprecated for now
+      # infile_list = @s3h.get_md5_sums(infile_basenames + auxfile_basenames + params_basenames) # deprecated for now
       
       DaemonKit.logger.info "Downloaded #{infile_list.keys.size} files."
 
@@ -115,12 +116,21 @@ class Worker < DaemonKit::RuotePseudoParticipant
       
       #now lets upload and set output files based on hash
       
-      #get the apropriate output bucket
-      output_folder = workitem['previous_output_folder'] ||= workitem.params['output_folder']
+      #get the apropriate output project
       
-      workitem['previous_output_folder'] = output_folder # set previous output folder for future reference
+      output_project_id = workitem['previous_output_project_id'] ||= workitem.params['output_project_id']
+      
+      raise "No output project found in Workitem" if output_project_id.nil?
+      
+      user_id = workitem.params['user_id'] 
+      
+      raise "No user if found in workitem" if user_id.nil?
+      
+      workitem['previous_output_project_id'] = output_project_id # set previous output project for future reference
       
       DaemonKit.logger.info "Uploading Output Files..."
+      
+      output_project = Project.login_bypass(:find_project_by_id, :id => output_project_id) 
       
       #first dup upload / output files if necessary
       output_hash["upload_files"] = output_hash["output_files"] if output_hash.has_key?("output_files") && ! output_hash.has_key?("upload_files")
@@ -129,13 +139,14 @@ class Worker < DaemonKit::RuotePseudoParticipant
       #now lets set output & upload
       
       if output_hash.has_key?("output_files") && output_hash.has_key?("upload_files")
-        #use hash values
-        @s3h.upload_all(output_hash["upload_files"], output_folder)
+
+        # first lets upload everything, it should return an array of project_attachement id's!
+        
+        project_attachment_ids = Item.upload(output_hash["upload_files"], user_id, output_project_id)
         
         #need to pass the output folder along with output_files
-        s3_outs = output_hash["output_files"].collect {|o| "#{output_folder}#{o}"}
         workitem["output_files"] = Array.new 
-        workitem["output_files"] = s3_outs
+        workitem["output_files"] = project_attachment_ids.collect{|r| r['project_attachment_id']}
       
       end
             

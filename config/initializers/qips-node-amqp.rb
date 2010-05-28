@@ -11,3 +11,16 @@ begin
 rescue LoadError
   $stderr.puts "Missing amqp gem. Please run 'gem install amqp' if you wish to use the AMQP participant/listener pair in ruote"
 end
+
+begin
+  require 'activerecord'
+  require 'activesupport'
+rescue LoadError
+  $stderr.puts "Missing activerecord gem. Please run 'gem install activerecord' "
+end
+
+begin
+  require 'httpclient'
+rescue LoadError
+  $stderr.puts "Missing httpclient gem. Please run 'gem install httpclient'"
+end
