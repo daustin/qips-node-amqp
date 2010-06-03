@@ -130,7 +130,7 @@ class Worker < DaemonKit::RuotePseudoParticipant
       
       DaemonKit.logger.info "Uploading Output Files..."
       
-      output_project = Project.login_bypass(:find_project_by_id, :id => output_project_id) 
+      output_project = Project.find(output_project_id) 
       
       #first dup upload / output files if necessary
       output_hash["upload_files"] = output_hash["output_files"] if output_hash.has_key?("output_files") && ! output_hash.has_key?("upload_files")
@@ -142,11 +142,11 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
         # first lets upload everything, it should return an array of project_attachement id's!
         
-        project_attachment_ids = Item.upload(output_hash["upload_files"], user_id, output_project_id)
+        items = Item.upload(output_hash["upload_files"], user_id, output_project_id)
         
         #need to pass the output folder along with output_files
         workitem["output_files"] = Array.new 
-        workitem["output_files"] = project_attachment_ids.collect{|r| r['project_attachment_id']}
+        workitem["output_files"] = items.collect{|r| r['id']}
       
       end
             

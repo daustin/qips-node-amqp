@@ -5,25 +5,26 @@ require 'project'
 class Item < ActiveResource::Base
   self.site = ILIMS_SITE
   
-  def self.download(project_attachment_ids, work_dir = WORK_DIR) 
+  def self.download(item_ids, work_dir = WORK_DIR) 
     
     ids = Array.new
     fnames = Array.new
     
-    if project_attachment_ids.class.to_s.eql?("Array") 
-      ids = project_attachment_ids
+    if item_ids.class.to_s.eql?("Array") 
+      ids = item_ids
     else
-      ids << project_attachments_ids
+      ids << item_ids
     end
     
     Dir.chdir(work_dir) do 
       ids.each do |i|
      
-          #first find project attachment to get the filename and item id
-          pa = Project.login_bypass(:find_project_attachment_by_id, :id => i) 
-          unless pa.nil? || pa['item'].nil?       
-            `#{WGET_CMD} -O #{pa['item']['attachment_file_name']} '#{ILIMS_SITE}/items/#{pa['item']['id']}/download_bypass'`
-            fnames << "#{pa['item']['attachment_file_name']}"
+          #first find item, then download it! 
+          item = Item.find(i) 
+          puts item.inspect
+          unless item.nil?       
+            `#{WGET_CMD} -O #{item.attachment_file_name} '#{ILIMS_SITE}/items/#{item.id}/download.xml'`
+            fnames << "#{item.attachment_file_name}"
           end
       end
     end
@@ -41,6 +42,11 @@ class Item < ActiveResource::Base
     
     # HTTP client (active resource can't handle multipart)
     clnt = HTTPClient.new
+    domain = nil
+    user = ILIMS_USERNAME
+    password = ILIMS_PASS
+    clnt.set_auth(domain, user, password)
+    
         
     #first we make the upload array
     
@@ -61,8 +67,8 @@ class Item < ActiveResource::Base
       puts "Uploading #{work_dir}/#{fn} to ilims..."
       body = { :attachment => File.open( "#{work_dir}/#{fn}"), :user_id => user_id, :project_id => project_id }   
       res = clnt.post("#{ILIMS_SITE}/items/upload_bypass.xml", body)
-      h = Hash.from_xml(res.content)['hash']
-      results << h 
+      h = Hash.from_xml(res.content)['item']
+      results << h
       
     end
     

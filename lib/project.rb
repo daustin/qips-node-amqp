@@ -6,18 +6,10 @@ class Project < ActiveResource::Base
 
   def items
     
-    @items = Item.get(:index_all, :project_id => self.id )
+    # GET /projects/1/items.xml
+    res = connection.get("#{self.class.prefix}#{self.class.collection_name}/#{self.id}/items")
     
   end
-  
-  def self.login_bypass(method, options = {})
-    
-    options[:method] = method
-    
-    self.get(:login_bypass, options )
-    
-  end
-  
-  
+
   
 end
