@@ -1,6 +1,7 @@
 require 'activeresource'
 require 'activesupport'
 require 'project'
+require 'rest_client'
 
 class Item < ActiveResource::Base
   self.site = ILIMS_SITE
@@ -39,14 +40,6 @@ class Item < ActiveResource::Base
     
     # array to return
     results = Array.new
-    
-    # HTTP client (active resource can't handle multipart)
-    clnt = HTTPClient.new
-    domain = nil
-    user = ILIMS_USERNAME
-    password = ILIMS_PASS
-    clnt.set_auth(domain, user, password)
-    
         
     #first we make the upload array
     
@@ -65,9 +58,9 @@ class Item < ActiveResource::Base
       # now we upload!
       
       puts "Uploading #{work_dir}/#{fn} to ilims..."
-      body = { :attachment => File.open( "#{work_dir}/#{fn}"), :user_id => user_id, :project_id => project_id }   
-      res = clnt.post("#{ILIMS_SITE}/items/upload_bypass.xml", body)
-      h = Hash.from_xml(res.content)['item']
+      body = { :user_id => user_id, :project_id => project_id }
+      res = RestClient.post "#{ILIMS_SITE}/items/upload_bypass.xml", body.merge(:attachment => File.new( "#{work_dir}/#{fn}"))
+      h = Hash.from_xml(res.body)['item']
       results << h
       
     end

@@ -20,7 +20,7 @@ rescue LoadError
 end
 
 begin
-  require 'httpclient'
+  require 'rest_client'
 rescue LoadError
-  $stderr.puts "Missing httpclient gem. Please run 'gem install httpclient'"
+  $stderr.puts "Missing rest-client gem. Please run 'gem install rest-client'"
 end
