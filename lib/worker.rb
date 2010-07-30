@@ -89,29 +89,39 @@ class Worker < DaemonKit::RuotePseudoParticipant
       DaemonKit.logger.info "Running Command #{workitem.params['executable']} #{args} #{infiles_arg}..."
   
       #now we examine out and see if we can parse it 
-      out = `#{workitem.params['executable']} #{args} #{infiles_arg}`
-      
-      DaemonKit.logger.info "Found output:"
-      puts out
-      
       output_hash = Hash.new
       
-      begin
+      if File.exist? workitem.params['executable']
+      
+        out = `#{workitem.params['executable']} #{args} #{infiles_arg}`
+      
+        DaemonKit.logger.info "Found output:"
+        puts out
+      
+        begin
         
-        output_hash = JSON.parse(out)
-        raise "not a hash" unless output_hash.class.to_s.eql?("Hash")
+          output_hash = JSON.parse(out)
+          raise "not a hash" unless output_hash.class.to_s.eql?("Hash")
         
-      rescue
+        rescue
         
-        DaemonKit.logger.info "Could not parse executable's output as JSON.  Using raw output..."
-        output_hash = Hash.new
-        output_hash["result"] = out
+          DaemonKit.logger.info "Could not parse executable's output as JSON.  Using raw output..."
+          output_hash = Hash.new
+          output_hash["result"] = out
         
+        end
+      
+        # set executable result 
+        workitem["result"] = output_hash["result"]
+      
+      else
+        
+        # set error is file not found
+        output_hash['error'] = "Could not find executable: #{workitem.params['executable']}"
+
       end
       
-      # set executable result and crash on error
-      workitem["result"] = output_hash["result"]
-      
+      #crash if has error      
       raise "#{output_hash['error']}" if output_hash.has_key?("error")      
       
       #now lets upload and set output files based on hash
