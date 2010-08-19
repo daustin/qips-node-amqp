@@ -24,3 +24,9 @@ begin
 rescue LoadError
   $stderr.puts "Missing rest-client gem. Please run 'gem install rest-client'"
 end
+
+begin
+  require 'right_aws'
+rescue LoadError
+  $stderr.puts "Missing right_aws gem. Please run 'gem install right_aws'"
+end

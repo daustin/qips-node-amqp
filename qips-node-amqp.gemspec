@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{qips-node-amqp}
-  s.version = "0.5.0"
+  s.version = "0.7.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["David Austin", "Andrew Brader"]
-  s.date = %q{2010-03-11}
+  s.date = %q{2010-07-30}
   s.description = %q{Listens for jobs on a rabbit server, works closely with qipr-rmgr}
   s.email = %q{daustin@mail.med.upenn.edu}
   s.executables = ["qips-node-amqp", "status-updater.rb"]
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
      "bin/status-updater.rb",
      "config/amqp.yml",
      "config/arguments.rb",
+     "config/aws.rb.sample",
      "config/boot.rb",
      "config/environment.rb",
      "config/environments/development.rb",
@@ -34,6 +35,9 @@ Gem::Specification.new do |s|
      "config/post-daemonize/readme",
      "config/pre-daemonize/readme",
      "config/ruote.yml",
+     "lib/ilims_helper.rb",
+     "lib/item.rb",
+     "lib/project.rb",
      "lib/qips-node-amqp.rb",
      "lib/s3_helper.rb",
      "lib/status_writer.rb",
@@ -41,7 +45,23 @@ Gem::Specification.new do |s|
      "lib/worker.rb",
      "libexec/qips-node-amqp-daemon.rb",
      "pills/qips-node.pill",
+     "pkg/qips-node-amqp-0.0.0.gem",
      "pkg/qips-node-amqp-0.1.0.gem",
+     "pkg/qips-node-amqp-0.2.0.gem",
+     "pkg/qips-node-amqp-0.2.1.gem",
+     "pkg/qips-node-amqp-0.2.2.gem",
+     "pkg/qips-node-amqp-0.2.3.gem",
+     "pkg/qips-node-amqp-0.2.4.gem",
+     "pkg/qips-node-amqp-0.3.0.gem",
+     "pkg/qips-node-amqp-0.3.1.gem",
+     "pkg/qips-node-amqp-0.3.2.gem",
+     "pkg/qips-node-amqp-0.4.0.gem",
+     "pkg/qips-node-amqp-0.4.1.gem",
+     "pkg/qips-node-amqp-0.4.2.gem",
+     "pkg/qips-node-amqp-0.4.3.gem",
+     "pkg/qips-node-amqp-0.4.4.gem",
+     "pkg/qips-node-amqp-0.4.5.gem",
+     "pkg/qips-node-amqp-0.5.0.gem",
      "qips-node-amqp.gemspec",
      "script/console",
      "script/destroy",
@@ -54,7 +74,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/daustin/qips-node-amqp}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
+  s.rubygems_version = %q{1.3.7}
   s.summary = %q{AMQP worker node for QIPS suite}
   s.test_files = [
     "spec/qips-node-amqp_spec.rb",
@@ -65,7 +85,7 @@ Gem::Specification.new do |s|
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
     else
     end
   else
