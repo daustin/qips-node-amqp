@@ -6,6 +6,13 @@ rescue LoadError
 end
 
 begin
+  require 'ruote'
+rescue LoadError
+  $stderr.puts "Missing ruote gem. Please run 'gem install ruote'"
+  exit 1
+end
+
+begin
   require 'amqp'
   require 'mq'
 rescue LoadError
