@@ -10,7 +10,6 @@ require 's3_helper'
 require 'work_item_helper'
 require 'json'
 require 'item'
-require 'HTTPClient'
 
 class Worker < DaemonKit::RuotePseudoParticipant
 
