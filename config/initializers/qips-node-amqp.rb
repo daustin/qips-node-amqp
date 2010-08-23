@@ -20,10 +20,10 @@ rescue LoadError
 end
 
 begin
-  require 'activerecord'
+  require 'activeresource'
   require 'activesupport'
 rescue LoadError
-  $stderr.puts "Missing activerecord gem. Please run 'gem install activerecord' "
+  $stderr.puts "Missing activeresource gem. Please run 'gem install activeresource' "
 end
 
 begin

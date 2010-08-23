@@ -11,7 +11,7 @@ require File.join(File.dirname(__FILE__), 'aws')
 require File.join(File.dirname(__FILE__), 'boot')
 
 
-require 'activerecord'
+require 'activeresource'
 
 DaemonKit::Initializer.run do |config|
 
