@@ -19,7 +19,7 @@ WORK_DIR = '/tmp/scratch'
 MD5_CMD = 'md5 -q'
 
 #active resource lims site
-ILIMS_SITE = 'http://admin:admin@aws.itmat.upenn.edu/ilims'
+ILIMS_SITE = 'http://admin:admin@www-int.awsitmat.org/ilims'
 
 # wget command to download from ilims
 WGET_CMD = 'wget --no-check '

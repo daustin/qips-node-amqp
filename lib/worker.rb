@@ -90,7 +90,11 @@ class Worker < DaemonKit::RuotePseudoParticipant
       #now we examine out and see if we can parse it 
       output_hash = Hash.new
       
-      if File.exist? workitem.params['executable']
+      #find the executable!
+      which_exec = `which #{workitem.params['executable']}` unless workitem.params['executable'].nil?
+      which_exec.strip!
+
+      if (! workitem.params['executable'].nil?) && (File.exist?(which_exec))
       
         out = `#{workitem.params['executable']} #{args} #{infiles_arg}`
       
