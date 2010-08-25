@@ -58,7 +58,7 @@ begin
 
 rescue  Exception => e
   
-  srw.send("error", nil, nil, "#{e.class}: #{e.message}")
+  srw.send("error", nil, nil, "#{e.class}: #{e.message}\n\n#{e.backtrace}")
   raise e
   
 end
