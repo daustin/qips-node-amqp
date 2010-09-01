@@ -14,8 +14,8 @@ begin
     gemspec.authors = ["David Austin" ,"Andrew Brader"]
     
     gemspec.add_dependency "right_aws", ">=1.10.0"
-    gemspec.add_dependency "activesupport", ">=2.3.4"
-    gemspec.add_dependency "activeresource", ">=2.3.4"
+    gemspec.add_dependency "activesupport", "=2.3.5"
+    gemspec.add_dependency "activeresource", "=2.3.5"
     gemspec.add_dependency "ruote", "=2.1.7"
     gemspec.add_dependency "json", ">=1.2.0"
     gemspec.add_dependency "amqp", "=0.6.7"
