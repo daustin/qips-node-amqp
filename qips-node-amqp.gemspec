@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{qips-node-amqp}
-  s.version = "0.7.9"
+  s.version = "0.7.10"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["David Austin", "Andrew Brader"]
-  s.date = %q{2010-08-25}
+  s.date = %q{2010-09-01}
   s.description = %q{Listens for jobs on a rabbit server, works closely with qipr-rmgr}
   s.email = %q{daustin@mail.med.upenn.edu}
   s.executables = ["qips-node-amqp", "status-updater.rb"]
@@ -87,8 +87,8 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<right_aws>, [">= 1.10.0"])
-      s.add_runtime_dependency(%q<activesupport>, [">= 2.3.4"])
-      s.add_runtime_dependency(%q<activeresource>, [">= 2.3.4"])
+      s.add_runtime_dependency(%q<activesupport>, ["= 2.3.5"])
+      s.add_runtime_dependency(%q<activeresource>, ["= 2.3.5"])
       s.add_runtime_dependency(%q<ruote>, ["= 2.1.7"])
       s.add_runtime_dependency(%q<json>, [">= 1.2.0"])
       s.add_runtime_dependency(%q<amqp>, ["= 0.6.7"])
@@ -96,8 +96,8 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<rest-client>, ["= 1.5.1"])
     else
       s.add_dependency(%q<right_aws>, [">= 1.10.0"])
-      s.add_dependency(%q<activesupport>, [">= 2.3.4"])
-      s.add_dependency(%q<activeresource>, [">= 2.3.4"])
+      s.add_dependency(%q<activesupport>, ["= 2.3.5"])
+      s.add_dependency(%q<activeresource>, ["= 2.3.5"])
       s.add_dependency(%q<ruote>, ["= 2.1.7"])
       s.add_dependency(%q<json>, [">= 1.2.0"])
       s.add_dependency(%q<amqp>, ["= 0.6.7"])
@@ -106,8 +106,8 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<right_aws>, [">= 1.10.0"])
-    s.add_dependency(%q<activesupport>, [">= 2.3.4"])
-    s.add_dependency(%q<activeresource>, [">= 2.3.4"])
+    s.add_dependency(%q<activesupport>, ["= 2.3.5"])
+    s.add_dependency(%q<activeresource>, ["= 2.3.5"])
     s.add_dependency(%q<ruote>, ["= 2.1.7"])
     s.add_dependency(%q<json>, [">= 1.2.0"])
     s.add_dependency(%q<amqp>, ["= 0.6.7"])

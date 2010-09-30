@@ -21,6 +21,7 @@ begin
     gemspec.add_dependency "amqp", "=0.6.7"
     gemspec.add_dependency "daemon-kit", "=0.1.8pre"
     gemspec.add_dependency "rest-client", "=1.5.1"
+    gemspec.add_dependency "mzml", ">=0.1.0"
     
     
     Jeweler::GemcutterTasks.new
