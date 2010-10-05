@@ -96,7 +96,12 @@ class Worker < DaemonKit::RuotePseudoParticipant
 
       if (! workitem.params['executable'].nil?) && (File.exist?(which_exec))
       
-        out = `#{workitem.params['executable']} #{args} #{infiles_arg}`
+        resp = Net::HTTP.get_response(URI.parse(META_URL))
+        instance_id = resp.body
+        instance_id = 'UNKNOWN' if instance_id.size > 50
+        
+        out = "\nInstance ID: #{instance_id}\nRunning: #{workitem.params['executable']} #{args} #{infiles_arg}\nWorkflow id: #{workitem.fei['wfid']}\n\n"
+        out += `#{workitem.params['executable']} #{args} #{infiles_arg}`
       
         DaemonKit.logger.info "Found output:"
         puts out
