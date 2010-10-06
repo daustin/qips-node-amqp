@@ -100,8 +100,8 @@ class Worker < DaemonKit::RuotePseudoParticipant
         instance_id = resp.body
         instance_id = 'UNKNOWN' if instance_id.size > 50
         
-        out = "\nInstance ID: #{instance_id}\nRunning: #{workitem.params['executable']} #{args} #{infiles_arg}\nWorkflow id: #{workitem.fei['wfid']}\n\n"
-        out += `#{workitem.params['executable']} #{args} #{infiles_arg}`
+        
+        out = `#{workitem.params['executable']} #{args} #{infiles_arg}`
       
         DaemonKit.logger.info "Found output:"
         puts out
@@ -119,8 +119,9 @@ class Worker < DaemonKit::RuotePseudoParticipant
         
         end
       
-        # set executable result 
-        workitem["result"] = output_hash["result"]
+        # set executable result
+        workitem['result'] = "\nInstance ID: #{instance_id}\nRunning: #{workitem.params['executable']} #{args} #{infiles_arg}\nWorkflow id: #{workitem.fei['wfid']}\n\n" 
+        workitem["result"] += output_hash["result"]
       
       else
         
